@@ -17,16 +17,16 @@ async function main() {
 
   // Create warehouses
   const mumbai = await prisma.warehouse.create({
-    data: { name: "Mumbai Warehouse", location: "Mumbai, India" },
-  })
+  data: { name: "Andheri Warehouse", location: "Andheri East, Mumbai" },
+})
 
-  const delhi = await prisma.warehouse.create({
-    data: { name: "Delhi Warehouse", location: "Delhi, India" },
-  })
+const delhi = await prisma.warehouse.create({
+  data: { name: "Connaught Place Warehouse", location: "Connaught Place, New Delhi" },
+})
 
-  const bangalore = await prisma.warehouse.create({
-    data: { name: "Bangalore Warehouse", location: "Bangalore, India" },
-  })
+const bangalore = await prisma.warehouse.create({
+  data: { name: "Whitefield Warehouse", location: "Whitefield, Bengaluru" },
+})
 
   // Create products
   const sneakers = await prisma.product.create({
