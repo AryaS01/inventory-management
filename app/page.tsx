@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-
+import AutoRefresh from "./components/AutoRefresh"
 export default async function Home() {
   const products = await prisma.product.findMany({
     include: {
@@ -15,6 +15,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#f9f7f4]">
       {/* Header */}
+      <AutoRefresh />
       <div className="border-b border-gray-200 bg-white px-6 py-4">
         <div className="max-w-3xl mx-auto">
           <span className="text-base font-semibold text-gray-700">

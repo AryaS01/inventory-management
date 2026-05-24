@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -40,8 +41,8 @@ export async function POST(request: NextRequest) {
         data: { reserved: { increment: quantity } },
       })
 
-      // Create the reservation with 10 minute expiry
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+      // Create the reservation with 10 seconds expiry
+      const expiresAt = new Date(Date.now() + 10 * 1000)
 
       const newReservation = await tx.reservation.create({
         data: {
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
 
       return newReservation
     })
-
+    revalidatePath("/")
     return NextResponse.json(reservation, { status: 201 })
   } catch (error: any) {
     if (error.message === "INSUFFICIENT_STOCK") {

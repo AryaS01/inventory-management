@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -45,7 +46,7 @@ export async function POST(
         },
       },
     })
-
+    revalidatePath("/")
     return NextResponse.json(updated)
   } catch (error) {
     console.error(error)
