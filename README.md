@@ -2,6 +2,8 @@
 
 Built this as a take-home exercise for Allo. It's a multi-warehouse inventory system where customers can reserve stock during checkout instead of it getting oversold.
 
+**Live demo:** https://inventory-management-pi-sandy.vercel.app
+
 ## What it does
 
 - Browse products and see stock levels per warehouse
