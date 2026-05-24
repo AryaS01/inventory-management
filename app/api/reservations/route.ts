@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const reservation = await prisma.$transaction(async (tx) => {
+   const reservation = await prisma.$transaction(async (tx: any) => {
       // Lock the stock level row so no other request can read/modify it
       // until this transaction completes
       const stockLevel = await tx.$queryRaw`
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         { ex: 60 * 60 * 24 }
       )
     }
-    
+
     revalidatePath("/")
     return NextResponse.json(reservation, { status: 201 })
   } catch (error: any) {

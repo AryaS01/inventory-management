@@ -62,7 +62,9 @@ Three layers, each catching what the previous one misses:
 
 **2. Confirm-time check** — even if the frontend somehow missed it, the confirm endpoint checks `expiresAt` and returns 410 if it's past.
 
-**3. Cron job** — runs every 5 minutes on Vercel, finds all PENDING reservations past their expiry and releases them. This is the safety net for users who just close the tab.
+3. **Cron job** — a Vercel cron runs once daily at midnight hitting `/api/cron/expire`, which finds all PENDING reservations past their `expiresAt` and releases them. This handles the case where the user closes the tab without confirming or cancelling. On a paid Vercel plan this would run every 5 minutes for tighter cleanup.
+
+**4. Idempotency** — the reserve and confirm endpoints support an `Idempotency-Key` header. If a client retries with the same key, Redis returns the cached response instead of creating a duplicate reservation. Keys expire after 24 hours.
 
 ## Things I'd do differently with more time
 
@@ -70,7 +72,7 @@ Three layers, each catching what the previous one misses:
 
 **Authentication** — reservations aren't tied to a user right now. Anyone with a reservation ID could confirm it. In production you'd tie reservations to a session.
 
-**Idempotency** — if a network hiccup causes a retry, you'd get duplicate reservations. The fix is checking an `Idempotency-Key` header and returning the cached response. I ran out of time for this one.
+**No user sessions** — reservations aren't tied to a logged-in user. Anyone with a reservation ID could confirm it. In production you'd tie reservations to a session or user account.
 
 ## Stack
 
