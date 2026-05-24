@@ -25,6 +25,7 @@ export default function ReservePage() {
   const [timeLeft, setTimeLeft] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorCode, setErrorCode] = useState<number | null>(null)
   const [done, setDone] = useState<"confirmed" | "released" | null>(null)
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export default function ReservePage() {
       clearInterval(interval)
       // Actually release the stock in the database
       fetch(`/api/reservations/${reservation.id}/release`, { method: "POST" })
+      setErrorCode(410)
       setError("Your reservation has expired. The stock has been released.")
       setReservation(null)
     } else {
@@ -56,7 +58,11 @@ export default function ReservePage() {
         body: JSON.stringify({ stockLevelId, quantity }),
       })
       const data = await res.json()
-      if (!res.ok) return setError(data.error || "Failed to reserve")
+     if (!res.ok) {
+  setError(data.error || "Failed to reserve")
+  setErrorCode(res.status)
+  return
+}
       setReservation(data)
     } catch {
       setError("Something went wrong.")
@@ -74,10 +80,12 @@ export default function ReservePage() {
       })
       if (res.status === 410) {
         setError("Your reservation expired before you could confirm.")
+        setErrorCode(410)
         return setReservation(null)
       }
       if (!res.ok) {
         const data = await res.json()
+        setErrorCode(res.status)
         return setError(data.error || "Failed to confirm")
       }
       setDone("confirmed")
@@ -140,20 +148,23 @@ export default function ReservePage() {
           Reserve item
         </h1>
         <p className="text-sm text-gray-600 mb-8">
-          Pick a quantity and confirm within 10 minutes.
+          Pick a quantity and confirm within 10 seconds.
         </p>
 
-        {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3 mb-6">
-            {error}
-            <button
-              onClick={() => window.location.href = "/"}
-              className="block mt-2 underline text-xs"
-            >
-              Go back
-            </button>
-          </div>
-        )}
+{error && (
+  <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3 mb-6">
+    {errorCode && (
+      <p className="text-xs font-mono text-red-400 mb-1">Error {errorCode}</p>
+    )}
+    <p className="font-medium">{error}</p>
+    <button
+      onClick={() => window.location.href = "/"}
+      className="block mt-2 underline text-xs"
+    >
+      Go back
+    </button>
+  </div>
+)}
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-6 flex flex-col gap-5">
           <div>
