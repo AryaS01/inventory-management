@@ -38,7 +38,7 @@ Start the server:
 npm run dev
 ```
 
-## The hard part — race conditions
+## Handling race conditions
 
 If two people try to reserve the last unit at the same time, exactly one should succeed. I handled this with a Postgres row-level lock inside a transaction:
 
