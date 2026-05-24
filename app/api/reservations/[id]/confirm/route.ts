@@ -1,12 +1,22 @@
 import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { redis } from "@/lib/redis"
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const idempotencyKey = request.headers.get("idempotency-key")
+
+  // Check cache first
+  if (idempotencyKey) {
+    const cached = await redis.get(`idempotency:confirm:${idempotencyKey}`)
+    if (cached) {
+      return NextResponse.json(cached, { status: 200 })
+    }
+  }
 
   try {
     const reservation = await prisma.reservation.findUnique({
@@ -64,6 +74,15 @@ export async function POST(
         },
       },
     })
+
+     if (idempotencyKey) {
+      await redis.set(
+        `idempotency:confirm:${idempotencyKey}`,
+        updated,
+        { ex: 60 * 60 * 24 }
+      )
+    }
+    
     revalidatePath("/")
     return NextResponse.json(updated)
   } catch (error) {

@@ -27,6 +27,8 @@ export default function ReservePage() {
   const [error, setError] = useState<string | null>(null)
   const [errorCode, setErrorCode] = useState<number | null>(null)
   const [done, setDone] = useState<"confirmed" | "released" | null>(null)
+  const [idempotencyKey] = useState(() => crypto.randomUUID())
+  const [confirmKey] = useState(() => crypto.randomUUID())
 
   useEffect(() => {
   if (!reservation) return
@@ -54,7 +56,10 @@ export default function ReservePage() {
     try {
       const res = await fetch("/api/reservations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({ stockLevelId, quantity }),
       })
       const data = await res.json()
@@ -77,6 +82,9 @@ export default function ReservePage() {
     try {
       const res = await fetch(`/api/reservations/${reservation!.id}/confirm`, {
         method: "POST",
+         headers: {
+          "idempotency-key": confirmKey,
+        },
       })
       if (res.status === 410) {
         setError("Your reservation expired before you could confirm.")

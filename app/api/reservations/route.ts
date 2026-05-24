@@ -1,9 +1,17 @@
 import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-
+import { redis } from "@/lib/redis"
 export async function POST(request: NextRequest) {
   try {
+    const idempotencyKey = request.headers.get("idempotency-key")
+     if (idempotencyKey) {
+      const cached = await redis.get(`idempotency:reserve:${idempotencyKey}`)
+      if (cached) {
+        return NextResponse.json(cached, { status: 200 })
+      }
+    }
+
     const body = await request.json()
     const { stockLevelId, quantity } = body
 
@@ -62,6 +70,15 @@ export async function POST(request: NextRequest) {
 
       return newReservation
     })
+
+      if (idempotencyKey) {
+      await redis.set(
+        `idempotency:reserve:${idempotencyKey}`,
+        reservation,
+        { ex: 60 * 60 * 24 }
+      )
+    }
+    
     revalidatePath("/")
     return NextResponse.json(reservation, { status: 201 })
   } catch (error: any) {
