@@ -33,7 +33,7 @@ export default async function Home() {
         </p>
 
         <div className="flex flex-col gap-4">
-          {products.map((product) => (
+          {products.map((product :any) => (
             <div
               key={product.id}
               className="bg-white rounded-2xl border border-gray-100 px-6 py-5 shadow-sm"
@@ -48,7 +48,7 @@ export default async function Home() {
               )}
 
               <div className="flex flex-col gap-2 mt-3">
-                {product.stockLevels.map((stock) => {
+                {product.stockLevels.map((stock : any) => {
                   const available = stock.total - stock.reserved
                   const outOfStock = available === 0
                   const lowStock = available > 0 && available <= 2
